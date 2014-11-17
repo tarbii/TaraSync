@@ -14,6 +14,11 @@ namespace TaraSync
         public readonly string B;
         public readonly string BConfig;
 
+        public bool BothConfigsExist
+        {
+            get { return Directory.Exists(AConfig) && Directory.Exists(BConfig); }
+        }
+
         public SyncTarget(string a, string b)
         {
             A = a;
