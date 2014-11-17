@@ -24,8 +24,9 @@ namespace TaraSync
         {
             var snapshot = GetSnapshot();
             var xDir = snapshot == null ? new Dictionary<string, string>() : snapshot.Data;
-            var aDir = GetAllFiles(syncTarget.AConfig);
-            var bDir = GetAllFiles(syncTarget.BConfig);
+            var aDir = GetAllFiles(syncTarget.A);
+            var bDir = GetAllFiles(syncTarget.B);
+            var syncId = Guid.NewGuid().ToString();
 
             foreach (var fileName in xDir.Keys.Union(aDir.Keys).Union(bDir.Keys))
             {
@@ -38,8 +39,8 @@ namespace TaraSync
                 if (!inA && inB && !inX) // brand new file in B => copy from B to A
                 {
                     File.Copy(
-                        Path.Combine(syncTarget.BConfig, fileName),
-                        Path.Combine(syncTarget.AConfig, fileName));
+                        Path.Combine(syncTarget.B, fileName),
+                        Path.Combine(syncTarget.A, fileName));
                 }
                 if (!inA && inB && inX)
                 {
@@ -49,14 +50,15 @@ namespace TaraSync
                     }
                     else // file was deleted from A but changed on B => ask user
                     {
-                        AskUserWhatToDo();
+                        var answer = GetConflictResolutionOption(fileName);
+                        ResolveConflict(fileName, answer, syncId);
                     }
                 }
                 if (inA && !inB && !inX) // brand new file in A => copy from A to B
                 {
                     File.Copy(
-                        Path.Combine(syncTarget.AConfig, fileName),
-                        Path.Combine(syncTarget.BConfig, fileName));
+                        Path.Combine(syncTarget.A, fileName),
+                        Path.Combine(syncTarget.B, fileName));
                 }
                 if (inA && !inB && inX)
                 {
@@ -66,7 +68,8 @@ namespace TaraSync
                     }
                     else // file was deleted from B but changed on A => ask user
                     {
-                        AskUserWhatToDo();
+                        var answer = GetConflictResolutionOption(fileName);
+                        ResolveConflict(fileName, answer, syncId);
                     }
                 }
                 if (inA && inB && !inX)
@@ -75,7 +78,8 @@ namespace TaraSync
                     // same brand new file in both folders => do nothing
                     else
                     {
-                        AskUserWhatToDo();
+                        var answer = GetConflictResolutionOption(fileName);
+                        ResolveConflict(fileName, answer, syncId);
                     }
                 }
                 if (inA && inB && inX)
@@ -87,31 +91,72 @@ namespace TaraSync
                         // file in B was changed => copy from B to A
                         {
                             File.Copy(
-                                Path.Combine(syncTarget.BConfig, fileName),
-                                Path.Combine(syncTarget.AConfig, fileName));
+                                Path.Combine(syncTarget.B, fileName),
+                                Path.Combine(syncTarget.A, fileName));
                         }
                         if (bDir[fileName] == xDir[fileName])
                         // file in A was changed => copy from A to B
                         {
                             File.Copy(
-                                Path.Combine(syncTarget.AConfig, fileName),
-                                Path.Combine(syncTarget.BConfig, fileName));
+                                Path.Combine(syncTarget.A, fileName),
+                                Path.Combine(syncTarget.B, fileName));
                         }
-                        AskUserWhatToDo();
+                        var answer = GetConflictResolutionOption(fileName);
+                        ResolveConflict(fileName, answer, syncId);
                     }
                 }
             }
         }
 
-        private void AskUserWhatToDo(UserOptions option)
+        private void ResolveConflict(string fileName, UserOptions answer, string syncId)
         {
             //What to do with files?
-            throw new NotImplementedException();
+            
+            switch (answer)
+            {
+                case 0:
+                    File.Copy(
+                                Path.Combine(syncTarget.A, fileName),
+                                Path.Combine(
+                                syncTarget.B, 
+                                Path.GetFileNameWithoutExtension(fileName) 
+                                + syncId
+                                +Path.GetExtension(fileName)));
+                    File.Copy(
+                                Path.Combine(syncTarget.B, fileName),
+                                Path.Combine(
+                                syncTarget.A, 
+                                Path.GetFileNameWithoutExtension(fileName)
+                                + syncId
+                                + Path.GetExtension(fileName)));
+                    break;
+                default:
+                    File.Copy(
+                                Path.Combine(syncTarget.A, fileName),
+                                Path.Combine(
+                                syncTarget.B,
+                                Path.GetFileNameWithoutExtension(fileName)
+                                + syncId
+                                + Path.GetExtension(fileName)));
+                    File.Copy(
+                                Path.Combine(syncTarget.B, fileName),
+                                Path.Combine(
+                                syncTarget.A,
+                                Path.GetFileNameWithoutExtension(fileName)
+                                + syncId
+                                + Path.GetExtension(fileName)));
+                    break;
+            }
+        }
+
+        private UserOptions GetConflictResolutionOption(string fileName)
+        {
+            return UserOptions.SaveBoth;
         }
 
         private enum UserOptions
         {
-            
+            SaveBoth
         }
 
         private Snapshot GetSnapshot()
