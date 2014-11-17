@@ -20,18 +20,110 @@ namespace TaraSync
             this.syncTarget = syncTarget;
         }
 
-        public Snapshot GetSnapshot()
+        public void Synchronize()
+        {
+            var snapshot = GetSnapshot();
+            var xDir = snapshot == null ? new Dictionary<string, string>() : snapshot.Data;
+            var aDir = GetAllFiles(syncTarget.AConfig);
+            var bDir = GetAllFiles(syncTarget.BConfig);
+
+            foreach (var fileName in xDir.Keys.Union(aDir.Keys).Union(bDir.Keys))
+            {
+                var inA = aDir.ContainsKey(fileName);
+                var inB = bDir.ContainsKey(fileName);
+                var inX = xDir.ContainsKey(fileName);
+
+                if (!inA && !inB && !inX) { } // never happens
+                if (!inA && !inB && inX) { } // do nothig
+                if (!inA && inB && !inX) // brand new file in B => copy from B to A
+                {
+                    File.Copy(
+                        Path.Combine(syncTarget.BConfig, fileName),
+                        Path.Combine(syncTarget.AConfig, fileName));
+                }
+                if (!inA && inB && inX)
+                {
+                    if (bDir[fileName] == xDir[fileName]) // file was deleted from A => del from B
+                    {
+                        File.Delete(Path.Combine(syncTarget.BConfig, fileName));
+                    }
+                    else // file was deleted from A but changed on B => ask user
+                    {
+                        AskUserWhatToDo();
+                    }
+                }
+                if (inA && !inB && !inX) // brand new file in A => copy from A to B
+                {
+                    File.Copy(
+                        Path.Combine(syncTarget.AConfig, fileName),
+                        Path.Combine(syncTarget.BConfig, fileName));
+                }
+                if (inA && !inB && inX)
+                {
+                    if (aDir[fileName] == xDir[fileName]) // file was deleted from B => del from A
+                    {
+                        File.Delete(Path.Combine(syncTarget.AConfig, fileName));
+                    }
+                    else // file was deleted from B but changed on A => ask user
+                    {
+                        AskUserWhatToDo();
+                    }
+                }
+                if (inA && inB && !inX)
+                {
+                    if (aDir[fileName] == bDir[fileName]) { }
+                    // same brand new file in both folders => do nothing
+                    else
+                    {
+                        AskUserWhatToDo();
+                    }
+                }
+                if (inA && inB && inX)
+                {
+                    if (aDir[fileName] == bDir[fileName]) { } // same file => do nothing
+                    else
+                    {
+                        if (aDir[fileName] == xDir[fileName])
+                        // file in B was changed => copy from B to A
+                        {
+                            File.Copy(
+                                Path.Combine(syncTarget.BConfig, fileName),
+                                Path.Combine(syncTarget.AConfig, fileName));
+                        }
+                        if (bDir[fileName] == xDir[fileName])
+                        // file in A was changed => copy from A to B
+                        {
+                            File.Copy(
+                                Path.Combine(syncTarget.AConfig, fileName),
+                                Path.Combine(syncTarget.BConfig, fileName));
+                        }
+                        AskUserWhatToDo();
+                    }
+                }
+            }
+        }
+
+        private void AskUserWhatToDo(UserOptions option)
+        {
+            //What to do with files?
+            throw new NotImplementedException();
+        }
+
+        private enum UserOptions
+        {
+            
+        }
+
+        private Snapshot GetSnapshot()
         {
             if (!syncTarget.BothConfigsExist)
             {
                 return null;
             }
 
-            var allSyncIds = new HashSet<string>(
-                Directory.EnumerateDirectories(syncTarget.AConfig));
-            allSyncIds.IntersectWith(
-                Directory.EnumerateDirectories(syncTarget.BConfig));
-            
+            var allSyncIds = Directory.EnumerateDirectories(syncTarget.AConfig)
+                    .Intersect(Directory.EnumerateDirectories(syncTarget.BConfig));
+
             var snapshots = allSyncIds.Select(id => new Snapshot(syncTarget, id)).ToList();
 
             var snapshotInUse = snapshots.FirstOrDefault(s => s.IsInUse);
@@ -64,7 +156,7 @@ namespace TaraSync
             return allFiles;
         }
 
-        private static void GetAllFilesRecursion(string rootPath, string relativePath, 
+        private static void GetAllFilesRecursion(string rootPath, string relativePath,
             Dictionary<string, string> data)
         {
             var currentPath = Path.Combine(rootPath, relativePath);
