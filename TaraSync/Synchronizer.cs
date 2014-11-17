@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace TaraSync
 {
-    class Synchronizer
+    public class Synchronizer
     {
         public const string ConfigDirName = ".tarasync";
 
@@ -106,44 +106,84 @@ namespace TaraSync
                     }
                 }
             }
+
+            Directory.CreateDirectory(syncTarget.AConfig);
+            Directory.CreateDirectory(Path.Combine(syncTarget.AConfig, syncId));
+            Directory.CreateDirectory(syncTarget.BConfig);
+            Directory.CreateDirectory(Path.Combine(syncTarget.BConfig, syncId));
+
         }
 
         private void ResolveConflict(string fileName, UserOptions answer, string syncId)
         {
-            //What to do with files?
-            
             switch (answer)
             {
-                case 0:
-                    File.Copy(
+                case UserOptions.SaveBoth:
+                    File.Move(
                                 Path.Combine(syncTarget.A, fileName),
-                                Path.Combine(
-                                syncTarget.B, 
-                                Path.GetFileNameWithoutExtension(fileName) 
-                                + syncId
+                                Path.Combine(syncTarget.B, 
+                                Path.GetFileNameWithoutExtension(fileName) +".A."+ syncId
                                 +Path.GetExtension(fileName)));
                     File.Copy(
+                                Path.Combine(syncTarget.B,
+                                Path.GetFileNameWithoutExtension(fileName) + ".A." + syncId
+                                + Path.GetExtension(fileName)),
+                                Path.Combine(syncTarget.A,
+                                Path.GetFileNameWithoutExtension(fileName) + ".A." + syncId
+                                + Path.GetExtension(fileName)));
+                    File.Move(
                                 Path.Combine(syncTarget.B, fileName),
-                                Path.Combine(
-                                syncTarget.A, 
-                                Path.GetFileNameWithoutExtension(fileName)
-                                + syncId
+                                Path.Combine(syncTarget.A, 
+                                Path.GetFileNameWithoutExtension(fileName) + ".B."+ syncId
+                                + Path.GetExtension(fileName)));
+                    File.Copy(
+                                Path.Combine(syncTarget.A,
+                                Path.GetFileNameWithoutExtension(fileName) + ".B." + syncId
+                                + Path.GetExtension(fileName)),
+                                Path.Combine(syncTarget.B,
+                                Path.GetFileNameWithoutExtension(fileName) + ".B." + syncId
                                 + Path.GetExtension(fileName)));
                     break;
-                default:
+
+                case UserOptions.SaveA:
                     File.Copy(
                                 Path.Combine(syncTarget.A, fileName),
-                                Path.Combine(
-                                syncTarget.B,
-                                Path.GetFileNameWithoutExtension(fileName)
-                                + syncId
-                                + Path.GetExtension(fileName)));
+                                Path.Combine(syncTarget.B, fileName));
+                    break;
+
+                case UserOptions.SaveB:
                     File.Copy(
                                 Path.Combine(syncTarget.B, fileName),
-                                Path.Combine(
-                                syncTarget.A,
-                                Path.GetFileNameWithoutExtension(fileName)
-                                + syncId
+                                Path.Combine(syncTarget.A, fileName));
+                    break;
+
+                case UserOptions.DoNothing:
+                    break;
+
+                default:
+                    File.Move(
+                                Path.Combine(syncTarget.A, fileName),
+                                Path.Combine(syncTarget.B, 
+                                Path.GetFileNameWithoutExtension(fileName) +".A."+ syncId
+                                +Path.GetExtension(fileName)));
+                    File.Copy(
+                                Path.Combine(syncTarget.B,
+                                Path.GetFileNameWithoutExtension(fileName) + ".A." + syncId
+                                + Path.GetExtension(fileName)),
+                                Path.Combine(syncTarget.A,
+                                Path.GetFileNameWithoutExtension(fileName) + ".A." + syncId
+                                + Path.GetExtension(fileName)));
+                    File.Move(
+                                Path.Combine(syncTarget.B, fileName),
+                                Path.Combine(syncTarget.A, 
+                                Path.GetFileNameWithoutExtension(fileName) + ".B."+ syncId
+                                + Path.GetExtension(fileName)));
+                    File.Copy(
+                                Path.Combine(syncTarget.A,
+                                Path.GetFileNameWithoutExtension(fileName) + ".B." + syncId
+                                + Path.GetExtension(fileName)),
+                                Path.Combine(syncTarget.B,
+                                Path.GetFileNameWithoutExtension(fileName) + ".B." + syncId
                                 + Path.GetExtension(fileName)));
                     break;
             }
@@ -156,7 +196,10 @@ namespace TaraSync
 
         private enum UserOptions
         {
-            SaveBoth
+            SaveBoth,
+            SaveA,
+            SaveB,
+            DoNothing
         }
 
         private Snapshot GetSnapshot()
@@ -212,7 +255,7 @@ namespace TaraSync
 
             foreach (var directory in Directory.EnumerateDirectories(currentPath))
             {
-                var directoryName = Path.GetDirectoryName(directory);
+                var directoryName = Path.GetFileName(directory);
                 if (relativePath == "" && directoryName == ConfigDirName)
                 {
                     continue;

@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace TaraSync
 {
-    class SyncTarget
+    public class SyncTarget
     {
         public readonly string A;
         public readonly string AConfig;

@@ -14,16 +14,9 @@ namespace TaraSync
         [STAThread]
         static void Main()
         {
-            //Application.EnableVisualStyles();
-            //Application.SetCompatibleTextRenderingDefault(false);
-            //Application.Run(new Form1());
-
-            var sync = new Synchronizer(
-                new SyncTarget(
-                    @"C:\Users\Ronin\Desktop\A",
-                    @"C:\Users\Ronin\Desktop\B"));
-
-            sync.Synchronize();
+            Application.EnableVisualStyles();
+            Application.SetCompatibleTextRenderingDefault(false);
+            Application.Run(new Form1());
         }
     }
 }
