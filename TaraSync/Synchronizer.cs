@@ -5,6 +5,7 @@ using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
+using System.Xml.Serialization;
 
 namespace TaraSync
 {
@@ -111,9 +112,19 @@ namespace TaraSync
             Directory.CreateDirectory(Path.Combine(syncTarget.AConfig, syncId));
             Directory.CreateDirectory(syncTarget.BConfig);
             Directory.CreateDirectory(Path.Combine(syncTarget.BConfig, syncId));
-
+            var newSnapshot = GetAllFiles(syncTarget.A);
+            SerializeSnapshot(newSnapshot, syncId);
         }
 
+        public void SerializeSnapshot(Dictionary<string, string> data, string syncId)
+        {
+            var fileName = Path.Combine(syncTarget.AConfig, syncId, "snapshot");
+            using (var fs = new FileStream(fileName, FileMode.Create, FileAccess.Write))
+            {
+                var xmlS = new XmlSerializer(data.GetType());
+                xmlS.Serialize(fs, data);
+            }
+        }
         private void ResolveConflict(string fileName, UserOptions answer, string syncId)
         {
             switch (answer)
