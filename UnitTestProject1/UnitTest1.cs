@@ -44,7 +44,7 @@ namespace UnitTestProject1
         }
 
         [TestMethod]
-        public void TestDoubleSynchronizationWithUpdatesResult()
+        public void TestSynchronizationWithUpdatesResult()
         {
             var testCase = testCaseDirs[0];
 
@@ -56,13 +56,33 @@ namespace UnitTestProject1
 
             AssertFoldersContentEquals(testCase.A, testCase.B, testCase.C);
 
+            // delete one file in A
             File.Delete(Directory.EnumerateFiles(testCase.A).First());
             File.Delete(Directory.EnumerateFiles(testCase.C).First());
 
+            // edit another file in B
             File.WriteAllText(
                 Directory.EnumerateFiles(testCase.B).Skip(1).First(), "some data");
             File.WriteAllText(
                 Directory.EnumerateFiles(testCase.C).First(), "some data");
+
+            sync.Synchronize();
+
+            // delete file in A and edit the same file in B
+            File.Delete(Directory.EnumerateFiles(testCase.A).First());
+            File.WriteAllText(
+                Directory.EnumerateFiles(testCase.B).First(), "some other data");
+            var fileName = Directory.EnumerateFiles(testCase.C).First();
+            File.WriteAllText(fileName, "some other data");
+            var name = Path.Combine(
+                Path.GetDirectoryName(fileName),
+                Path.GetFileNameWithoutExtension(fileName));
+            var ext = Path.GetExtension(fileName);
+            var syncId =
+                Path.GetFileName(
+                    Directory.EnumerateDirectories(Path.Combine(testCase.A, Synchronizer.ConfigDirName)).First());
+            var newFileName = string.Format("{0}.{1}.{2}{3}", name, "B", syncId, ext);
+            File.Move(fileName, newFileName);
 
             sync.Synchronize();
 
