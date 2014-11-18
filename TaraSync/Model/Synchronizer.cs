@@ -99,7 +99,9 @@ namespace TaraSync.Model
         
         private void ResolveConflict(string fileName, ConflictResolutionOption option, string syncId)
         {
-            var name = Path.GetFileNameWithoutExtension(fileName);
+            var name = Path.Combine(
+                Path.GetDirectoryName(fileName),
+                Path.GetFileNameWithoutExtension(fileName));
             var ext = Path.GetExtension(fileName);
             var names = new
             {
@@ -117,15 +119,21 @@ namespace TaraSync.Model
 
             if ((option & ConflictResolutionOption.RenameA) != ConflictResolutionOption.None)
             {
-                File.Move(names.A, names.AA);
-                Directory.CreateDirectory(Path.GetDirectoryName(names.BA));
-                File.Copy(names.AA, names.BA);
+                if (File.Exists(names.A))
+                {
+                    File.Move(names.A, names.AA);
+                    Directory.CreateDirectory(Path.GetDirectoryName(names.BA));
+                    File.Copy(names.AA, names.BA);
+                }
             }
             if ((option & ConflictResolutionOption.RenameB) != ConflictResolutionOption.None)
             {
-                File.Move(names.B, names.BB);
-                Directory.CreateDirectory(Path.GetDirectoryName(names.AB));
-                File.Copy(names.BB, names.AB);
+                if (File.Exists(names.B))
+                {
+                    File.Move(names.B, names.BB);
+                    Directory.CreateDirectory(Path.GetDirectoryName(names.AB));
+                    File.Copy(names.BB, names.AB);
+                }
             }
             if ((option & ConflictResolutionOption.UseA) != ConflictResolutionOption.None)
             {
