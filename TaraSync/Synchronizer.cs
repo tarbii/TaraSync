@@ -21,13 +21,17 @@ namespace TaraSync
             this.syncTarget = syncTarget;
         }
 
-        public void Synchronize()
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="syncIdTest">For test only</param>
+        public void Synchronize(string syncIdTest = null)
         {
             var snapshot = GetSnapshot();
             var xDir = snapshot == null ? new Dictionary<string, string>() : snapshot.Data;
             var aDir = GetAllFiles(syncTarget.A);
             var bDir = GetAllFiles(syncTarget.B);
-            var syncId = Guid.NewGuid().ToString();
+            var syncId = syncIdTest ?? Guid.NewGuid().ToString();
 
             foreach (var fileName in xDir.Keys.Union(aDir.Keys).Union(bDir.Keys))
             {
@@ -35,77 +39,49 @@ namespace TaraSync
                 var inB = bDir.ContainsKey(fileName);
                 var inX = xDir.ContainsKey(fileName);
 
-                if (!inA && !inB && !inX) { } // never happens
-                if (!inA && !inB && inX) { } // do nothig
-                if (!inA && inB && !inX) // brand new file in B => copy from B to A
-                {
-                    File.Copy(
-                        Path.Combine(syncTarget.B, fileName),
-                        Path.Combine(syncTarget.A, fileName));
-                }
+                var option = ConflictResolutionOption.None;
+
+                // never happens
+                if (!inA && !inB && !inX) option = ConflictResolutionOption.None; 
+                // do nothig
+                if (!inA && !inB && inX) option = ConflictResolutionOption.None;
+                // brand new file in B => copy from B to A
+                if (!inA && inB && !inX) option = ConflictResolutionOption.UseB;
+                // file was deleted from A => del from B -OR- file was deleted from A but changed on B => ask user
                 if (!inA && inB && inX)
                 {
-                    if (bDir[fileName] == xDir[fileName]) // file was deleted from A => del from B
-                    {
-                        File.Delete(Path.Combine(syncTarget.BConfig, fileName));
-                    }
-                    else // file was deleted from A but changed on B => ask user
-                    {
-                        var answer = GetConflictResolutionOption(fileName);
-                        ResolveConflict(fileName, answer, syncId);
-                    }
+                    option = bDir[fileName] == xDir[fileName] 
+                        ? ConflictResolutionOption.UseA
+                        : GetConflictResolutionOption(fileName);
                 }
-                if (inA && !inB && !inX) // brand new file in A => copy from A to B
-                {
-                    File.Copy(
-                        Path.Combine(syncTarget.A, fileName),
-                        Path.Combine(syncTarget.B, fileName));
-                }
+                // brand new file in A => copy from A to B
+                if (inA && !inB && !inX) option = ConflictResolutionOption.UseA;
+                // file was deleted from B => del from A -OR- file was deleted from B but changed on A => ask user
                 if (inA && !inB && inX)
                 {
-                    if (aDir[fileName] == xDir[fileName]) // file was deleted from B => del from A
-                    {
-                        File.Delete(Path.Combine(syncTarget.AConfig, fileName));
-                    }
-                    else // file was deleted from B but changed on A => ask user
-                    {
-                        var answer = GetConflictResolutionOption(fileName);
-                        ResolveConflict(fileName, answer, syncId);
-                    }
+                    option = aDir[fileName] == xDir[fileName]
+                        ? ConflictResolutionOption.UseB 
+                        : GetConflictResolutionOption(fileName);
                 }
+                // same brand new file in both folders => do nothing -OR- not same => ask user
                 if (inA && inB && !inX)
                 {
-                    if (aDir[fileName] == bDir[fileName]) { }
-                    // same brand new file in both folders => do nothing
-                    else
-                    {
-                        var answer = GetConflictResolutionOption(fileName);
-                        ResolveConflict(fileName, answer, syncId);
-                    }
+                    option = aDir[fileName] == bDir[fileName]
+                        ? ConflictResolutionOption.None
+                        : GetConflictResolutionOption(fileName);
                 }
                 if (inA && inB && inX)
                 {
-                    if (aDir[fileName] == bDir[fileName]) { } // same file => do nothing
-                    else
-                    {
-                        if (aDir[fileName] == xDir[fileName])
-                        // file in B was changed => copy from B to A
-                        {
-                            File.Copy(
-                                Path.Combine(syncTarget.B, fileName),
-                                Path.Combine(syncTarget.A, fileName));
-                        }
-                        if (bDir[fileName] == xDir[fileName])
-                        // file in A was changed => copy from A to B
-                        {
-                            File.Copy(
-                                Path.Combine(syncTarget.A, fileName),
-                                Path.Combine(syncTarget.B, fileName));
-                        }
-                        var answer = GetConflictResolutionOption(fileName);
-                        ResolveConflict(fileName, answer, syncId);
-                    }
+                    // same file => do nothing
+                    if (aDir[fileName] == bDir[fileName]) option = ConflictResolutionOption.None; 
+                    // file in B was changed => copy from B to A
+                    else if (aDir[fileName] == xDir[fileName]) option = ConflictResolutionOption.UseB;
+                    // file in A was changed => copy from A to B
+                    else if (bDir[fileName] == xDir[fileName]) option = ConflictResolutionOption.UseA;
+                    else option = GetConflictResolutionOption(fileName); 
                 }
+
+                ResolveConflict(fileName, option, syncId);
             }
 
             Directory.CreateDirectory(syncTarget.AConfig);
@@ -113,7 +89,7 @@ namespace TaraSync
             Directory.CreateDirectory(syncTarget.BConfig);
             Directory.CreateDirectory(Path.Combine(syncTarget.BConfig, syncId));
             var newSnapshot = GetAllFiles(syncTarget.A);
-            SerializeSnapshot(newSnapshot, syncId);
+            //SerializeSnapshot(newSnapshot, syncId);
         }
 
         public void SerializeSnapshot(Dictionary<string, string> data, string syncId)
@@ -125,92 +101,80 @@ namespace TaraSync
                 xmlS.Serialize(fs, data);
             }
         }
-        private void ResolveConflict(string fileName, UserOptions answer, string syncId)
+        private void ResolveConflict(string fileName, ConflictResolutionOption option, string syncId)
         {
-            switch (answer)
+            var name = Path.GetFileNameWithoutExtension(fileName);
+            var ext = Path.GetExtension(fileName);
+            var names = new
             {
-                case UserOptions.SaveBoth:
-                    File.Move(
-                                Path.Combine(syncTarget.A, fileName),
-                                Path.Combine(syncTarget.B, 
-                                Path.GetFileNameWithoutExtension(fileName) +".A."+ syncId
-                                +Path.GetExtension(fileName)));
-                    File.Copy(
-                                Path.Combine(syncTarget.B,
-                                Path.GetFileNameWithoutExtension(fileName) + ".A." + syncId
-                                + Path.GetExtension(fileName)),
-                                Path.Combine(syncTarget.A,
-                                Path.GetFileNameWithoutExtension(fileName) + ".A." + syncId
-                                + Path.GetExtension(fileName)));
-                    File.Move(
-                                Path.Combine(syncTarget.B, fileName),
-                                Path.Combine(syncTarget.A, 
-                                Path.GetFileNameWithoutExtension(fileName) + ".B."+ syncId
-                                + Path.GetExtension(fileName)));
-                    File.Copy(
-                                Path.Combine(syncTarget.A,
-                                Path.GetFileNameWithoutExtension(fileName) + ".B." + syncId
-                                + Path.GetExtension(fileName)),
-                                Path.Combine(syncTarget.B,
-                                Path.GetFileNameWithoutExtension(fileName) + ".B." + syncId
-                                + Path.GetExtension(fileName)));
-                    break;
+                A = Path.Combine(syncTarget.A, fileName),
+                AA = Path.Combine(syncTarget.A,
+                    string.Format("{0}.{1}.{2}{3}", name, "A", syncId, ext)),
+                AB = Path.Combine(syncTarget.A,
+                    string.Format("{0}.{1}.{2}{3}", name, "B", syncId, ext)),
+                B = Path.Combine(syncTarget.B, fileName),
+                BA = Path.Combine(syncTarget.B,
+                    string.Format("{0}.{1}.{2}{3}", name, "A", syncId, ext)),
+                BB = Path.Combine(syncTarget.B,
+                    string.Format("{0}.{1}.{2}{3}", name, "B", syncId, ext)),
+            };
 
-                case UserOptions.SaveA:
-                    File.Copy(
-                                Path.Combine(syncTarget.A, fileName),
-                                Path.Combine(syncTarget.B, fileName));
-                    break;
-
-                case UserOptions.SaveB:
-                    File.Copy(
-                                Path.Combine(syncTarget.B, fileName),
-                                Path.Combine(syncTarget.A, fileName));
-                    break;
-
-                case UserOptions.DoNothing:
-                    break;
-
-                default:
-                    File.Move(
-                                Path.Combine(syncTarget.A, fileName),
-                                Path.Combine(syncTarget.B, 
-                                Path.GetFileNameWithoutExtension(fileName) +".A."+ syncId
-                                +Path.GetExtension(fileName)));
-                    File.Copy(
-                                Path.Combine(syncTarget.B,
-                                Path.GetFileNameWithoutExtension(fileName) + ".A." + syncId
-                                + Path.GetExtension(fileName)),
-                                Path.Combine(syncTarget.A,
-                                Path.GetFileNameWithoutExtension(fileName) + ".A." + syncId
-                                + Path.GetExtension(fileName)));
-                    File.Move(
-                                Path.Combine(syncTarget.B, fileName),
-                                Path.Combine(syncTarget.A, 
-                                Path.GetFileNameWithoutExtension(fileName) + ".B."+ syncId
-                                + Path.GetExtension(fileName)));
-                    File.Copy(
-                                Path.Combine(syncTarget.A,
-                                Path.GetFileNameWithoutExtension(fileName) + ".B." + syncId
-                                + Path.GetExtension(fileName)),
-                                Path.Combine(syncTarget.B,
-                                Path.GetFileNameWithoutExtension(fileName) + ".B." + syncId
-                                + Path.GetExtension(fileName)));
-                    break;
+            if ((option & ConflictResolutionOption.RenameA) != ConflictResolutionOption.None)
+            {
+                File.Move(names.A, names.AA);
+                File.Copy(names.AA, names.BA);
+            }
+            if ((option & ConflictResolutionOption.RenameB) != ConflictResolutionOption.None)
+            {
+                File.Move(names.B, names.BB);
+                File.Copy(names.BB, names.AB);
+            }
+            if ((option & ConflictResolutionOption.UseA) != ConflictResolutionOption.None)
+            {
+                if (File.Exists(names.A))
+                {
+                    File.Copy(names.A, names.B, true);
+                }
+                else
+                {
+                    File.Delete(names.B);
+                }
+            }
+            if ((option & ConflictResolutionOption.UseB) != ConflictResolutionOption.None)
+            {
+                if (File.Exists(names.B))
+                {
+                    File.Copy(names.B, names.A, true);
+                }
+                else
+                {
+                    File.Delete(names.A);
+                }
             }
         }
 
-        private UserOptions GetConflictResolutionOption(string fileName)
+        private ConflictResolutionOption GetConflictResolutionOption(string fileName)
         {
-            return UserOptions.SaveBoth;
+#if DEBUG
+            return ConflictResolutionOption.RenameBoth;
+#else
+            throw new NotImplementedException();
+#endif
         }
 
-        private enum UserOptions
+        [Flags]
+        public enum ConflictResolutionOption
         {
-            SaveBoth,
-            SaveA,
-            SaveB,
-            DoNothing
+            None = 0,
+
+            UseA = 1,
+            UseB = 2,
+            RenameA = 4,
+            RenameB = 8,
+
+            RenameBoth = RenameA | RenameB,
+            RenameAUseB = RenameA | UseB,
+            RenameBUseA = RenameB | UseA,
         }
 
         private Snapshot GetSnapshot()
@@ -248,7 +212,7 @@ namespace TaraSync
             return null;
         }
 
-        private static Dictionary<string, string> GetAllFiles(string path)
+        public static Dictionary<string, string> GetAllFiles(string path)
         {
             var allFiles = new Dictionary<string, string>();
             GetAllFilesRecursion(path, "", allFiles);
