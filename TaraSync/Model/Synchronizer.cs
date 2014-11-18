@@ -27,10 +27,16 @@ namespace TaraSync.Model
         public void Synchronize(string syncIdTest = null)
         {
             var snapshot = GetSnapshot();
+            if (snapshot != null)
+            {
+                snapshot.IsInUse = true;
+            }
             var xDir = snapshot == null ? new Dictionary<string, string>() : snapshot.Data;
             var aDir = GetAllFiles(syncTarget.A);
             var bDir = GetAllFiles(syncTarget.B);
-            var syncId = syncIdTest ?? Guid.NewGuid().ToString();
+            var syncId = snapshot != null
+                ? snapshot.Id
+                : syncIdTest ?? Guid.NewGuid().ToString();
 
             foreach (var fileName in xDir.Keys.Union(aDir.Keys).Union(bDir.Keys))
             {
@@ -83,24 +89,14 @@ namespace TaraSync.Model
                 ResolveConflict(fileName, option, syncId);
             }
 
-            Directory.CreateDirectory(syncTarget.AConfig);
-            Directory.CreateDirectory(Path.Combine(syncTarget.AConfig, syncId));
-            Directory.CreateDirectory(syncTarget.BConfig);
-            Directory.CreateDirectory(Path.Combine(syncTarget.BConfig, syncId));
             var newSnapshot = GetAllFiles(syncTarget.A);
-            SerializeSnapshot(newSnapshot, syncId);
-        }
-
-        public void SerializeSnapshot(Dictionary<string, string> data, string syncId)
-        {
-            var fileName = Path.Combine(syncTarget.AConfig, syncId, "snapshot");
-            using (var fs = new FileStream(fileName, FileMode.Create, FileAccess.Write))
+            Snapshot.SerializeSnapshot(newSnapshot, syncTarget);
+            if (snapshot != null)
             {
-                var serializer = new DataContractJsonSerializer(data.GetType());
-                serializer.WriteObject(fs, data);
+                snapshot.DeleteYourself();
             }
-            Directory.CreateDirectory(Path.Combine(syncTarget.BConfig, syncId));
         }
+        
         private void ResolveConflict(string fileName, ConflictResolutionOption option, string syncId)
         {
             var name = Path.GetFileNameWithoutExtension(fileName);
