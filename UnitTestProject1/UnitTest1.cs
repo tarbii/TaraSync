@@ -35,11 +35,39 @@ namespace UnitTestProject1
             var sync = new Synchronizer(new SyncTarget(testCase.A, testCase.B));
 
             sync.Synchronize("6bfce438-b4a9-455f-9495-2be38ba314d6");
+
+            AssertFoldersContentEquals(testCase.A, testCase.B, testCase.C);
+
             sync.Synchronize();
 
             AssertFoldersContentEquals(testCase.A, testCase.B, testCase.C);
         }
 
+        [TestMethod]
+        public void TestDoubleSynchronizationWithUpdatesResult()
+        {
+            var testCase = testCaseDirs[0];
+
+            PrepareCase(testCase.Source, testCase.Dest);
+
+            var sync = new Synchronizer(new SyncTarget(testCase.A, testCase.B));
+
+            sync.Synchronize("6bfce438-b4a9-455f-9495-2be38ba314d6");
+
+            AssertFoldersContentEquals(testCase.A, testCase.B, testCase.C);
+
+            File.Delete(Directory.EnumerateFiles(testCase.A).First());
+            File.Delete(Directory.EnumerateFiles(testCase.C).First());
+
+            File.WriteAllText(
+                Directory.EnumerateFiles(testCase.B).Skip(1).First(), "some data");
+            File.WriteAllText(
+                Directory.EnumerateFiles(testCase.C).First(), "some data");
+
+            sync.Synchronize();
+
+            AssertFoldersContentEquals(testCase.A, testCase.B, testCase.C);
+        }
 
 
 
