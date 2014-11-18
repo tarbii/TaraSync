@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Runtime.Serialization.Json;
 using System.Security.Cryptography;
 using System.Xml.Serialization;
 
@@ -87,7 +88,7 @@ namespace TaraSync.Model
             Directory.CreateDirectory(syncTarget.BConfig);
             Directory.CreateDirectory(Path.Combine(syncTarget.BConfig, syncId));
             var newSnapshot = GetAllFiles(syncTarget.A);
-            //SerializeSnapshot(newSnapshot, syncId);
+            SerializeSnapshot(newSnapshot, syncId);
         }
 
         public void SerializeSnapshot(Dictionary<string, string> data, string syncId)
@@ -95,8 +96,8 @@ namespace TaraSync.Model
             var fileName = Path.Combine(syncTarget.AConfig, syncId, "snapshot");
             using (var fs = new FileStream(fileName, FileMode.Create, FileAccess.Write))
             {
-                var xmlS = new XmlSerializer(data.GetType());
-                xmlS.Serialize(fs, data);
+                var serializer = new DataContractJsonSerializer(data.GetType());
+                serializer.WriteObject(fs, data);
             }
         }
         private void ResolveConflict(string fileName, ConflictResolutionOption option, string syncId)
@@ -120,17 +121,20 @@ namespace TaraSync.Model
             if ((option & ConflictResolutionOption.RenameA) != ConflictResolutionOption.None)
             {
                 File.Move(names.A, names.AA);
+                Directory.CreateDirectory(Path.GetDirectoryName(names.BA));
                 File.Copy(names.AA, names.BA);
             }
             if ((option & ConflictResolutionOption.RenameB) != ConflictResolutionOption.None)
             {
                 File.Move(names.B, names.BB);
+                Directory.CreateDirectory(Path.GetDirectoryName(names.AB));
                 File.Copy(names.BB, names.AB);
             }
             if ((option & ConflictResolutionOption.UseA) != ConflictResolutionOption.None)
             {
                 if (File.Exists(names.A))
                 {
+                    Directory.CreateDirectory(Path.GetDirectoryName(names.B));
                     File.Copy(names.A, names.B, true);
                 }
                 else
@@ -142,6 +146,7 @@ namespace TaraSync.Model
             {
                 if (File.Exists(names.B))
                 {
+                    Directory.CreateDirectory(Path.GetDirectoryName(names.A));
                     File.Copy(names.B, names.A, true);
                 }
                 else
