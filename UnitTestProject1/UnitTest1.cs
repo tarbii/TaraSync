@@ -10,37 +10,80 @@ namespace UnitTestProject1
     [TestClass]
     public class UnitTest1
     {
+
         [TestMethod]
         public void TestSynchronizationResult()
         {
-            const string caseDirSource = @"TestCases\Case1";
-            const string caseDir = @"work\TestCases\Case1";
+            var testCase = testCaseDirs[0];
 
-            if (Directory.Exists(caseDir))
-            {
-                Directory.Delete(caseDir, true);
-            }
-            DirectoryCopy(caseDirSource, caseDir, true);
+            PrepareCase(testCase.Source, testCase.Dest);
 
-            var aDir = Path.Combine(caseDir, "A");
-            var bDir = Path.Combine(caseDir, "B");
-            var cDir = Path.Combine(caseDir, "C");
-
-            var sync = new Synchronizer(new SyncTarget(aDir, bDir));
+            var sync = new Synchronizer(new SyncTarget(testCase.A, testCase.B));
 
             sync.Synchronize("6bfce438-b4a9-455f-9495-2be38ba314d6");
 
+            AssertFoldersContentEquals(testCase.A, testCase.B, testCase.C);
+        }
+
+        [TestMethod]
+        public void TestDoubleSynchronizationResult()
+        {
+            var testCase = testCaseDirs[0];
+
+            PrepareCase(testCase.Source, testCase.Dest);
+
+            var sync = new Synchronizer(new SyncTarget(testCase.A, testCase.B));
+
+            sync.Synchronize("6bfce438-b4a9-455f-9495-2be38ba314d6");
+            sync.Synchronize();
+
+            AssertFoldersContentEquals(testCase.A, testCase.B, testCase.C);
+        }
+
+
+
+
+        private readonly TestCaseDirs[] testCaseDirs = new TestCaseDirs[]
+        {
+            new TestCaseDirs(@"TestCases\Case1"), 
+        };
+
+        private class TestCaseDirs
+        {
+            public readonly string Source, Dest, A, B, C;
+
+            public TestCaseDirs(string source)
+            {
+                Source = source;
+                Dest = Path.Combine("work", source);
+                A = Path.Combine(Dest, "A");
+                B = Path.Combine(Dest, "B");
+                C = Path.Combine(Dest, "C");
+            }
+        }
+
+        private static void PrepareCase(string source, string dest)
+        {
+            if (Directory.Exists(dest))
+            {
+                Directory.Delete(dest, true);
+            }
+            DirectoryCopy(source, dest, true);
+        }
+
+        private static void AssertFoldersContentEquals(string aDir, string bDir, string cDir)
+        {
             var a = Synchronizer.GetAllFiles(aDir);
             var b = Synchronizer.GetAllFiles(bDir);
             var c = Synchronizer.GetAllFiles(cDir);
 
             foreach (var filename in a.Keys.Union(b.Keys).Union(c.Keys))
             {
-                Assert.IsTrue(a.ContainsKey(filename), 
+                Assert.IsTrue(a.ContainsKey(filename),
                     string.Format("No {0} in {1}", filename, aDir));
                 Assert.IsTrue(b.ContainsKey(filename),
                     string.Format("No {0} in {1}", filename, bDir));
-                Assert.IsTrue(c.ContainsKey(filename), 
+                Assert.IsTrue(c.ContainsKey(filename),
                     string.Format("No {0} in {1}", filename, cDir));
                 Assert.AreEqual(a[filename], b[filename],
                     string.Format("{0} differs in A and B", filename));
@@ -48,7 +91,7 @@ namespace UnitTestProject1
                     string.Format("{0} differs in A and C", filename));
                 Assert.AreEqual(b[filename], c[filename],
                     string.Format("{0} differs in B and C", filename));
-            }
+            }            
         }
 
         private static void DirectoryCopy(string sourceDirName, string destDirName, bool copySubDirs)

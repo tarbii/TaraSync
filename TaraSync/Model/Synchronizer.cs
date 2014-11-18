@@ -41,7 +41,7 @@ namespace TaraSync.Model
                 var option = ConflictResolutionOption.None;
 
                 // never happens
-                if (!inA && !inB && !inX) option = ConflictResolutionOption.None; 
+                if (!inA && !inB && !inX) option = ConflictResolutionOption.None;
                 // do nothig
                 if (!inA && !inB && inX) option = ConflictResolutionOption.None;
                 // brand new file in B => copy from B to A
@@ -49,7 +49,7 @@ namespace TaraSync.Model
                 // file was deleted from A => del from B -OR- file was deleted from A but changed on B => ask user
                 if (!inA && inB && inX)
                 {
-                    option = bDir[fileName] == xDir[fileName] 
+                    option = bDir[fileName] == xDir[fileName]
                         ? ConflictResolutionOption.UseA
                         : GetConflictResolutionOption(fileName);
                 }
@@ -59,7 +59,7 @@ namespace TaraSync.Model
                 if (inA && !inB && inX)
                 {
                     option = aDir[fileName] == xDir[fileName]
-                        ? ConflictResolutionOption.UseB 
+                        ? ConflictResolutionOption.UseB
                         : GetConflictResolutionOption(fileName);
                 }
                 // same brand new file in both folders => do nothing -OR- not same => ask user
@@ -72,12 +72,12 @@ namespace TaraSync.Model
                 if (inA && inB && inX)
                 {
                     // same file => do nothing
-                    if (aDir[fileName] == bDir[fileName]) option = ConflictResolutionOption.None; 
+                    if (aDir[fileName] == bDir[fileName]) option = ConflictResolutionOption.None;
                     // file in B was changed => copy from B to A
                     else if (aDir[fileName] == xDir[fileName]) option = ConflictResolutionOption.UseB;
                     // file in A was changed => copy from A to B
                     else if (bDir[fileName] == xDir[fileName]) option = ConflictResolutionOption.UseA;
-                    else option = GetConflictResolutionOption(fileName); 
+                    else option = GetConflictResolutionOption(fileName);
                 }
 
                 ResolveConflict(fileName, option, syncId);
@@ -99,6 +99,7 @@ namespace TaraSync.Model
                 var serializer = new DataContractJsonSerializer(data.GetType());
                 serializer.WriteObject(fs, data);
             }
+            Directory.CreateDirectory(Path.Combine(syncTarget.BConfig, syncId));
         }
         private void ResolveConflict(string fileName, ConflictResolutionOption option, string syncId)
         {
@@ -188,7 +189,9 @@ namespace TaraSync.Model
             }
 
             var allSyncIds = Directory.EnumerateDirectories(syncTarget.AConfig)
-                    .Intersect(Directory.EnumerateDirectories(syncTarget.BConfig));
+                .Select(Path.GetFileName)
+                .Intersect(Directory.EnumerateDirectories(syncTarget.BConfig)
+                    .Select(Path.GetFileName));
 
             var snapshots = allSyncIds.Select(id => new Snapshot(syncTarget, id)).ToList();
 
