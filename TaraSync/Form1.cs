@@ -10,11 +10,13 @@ using System.Windows.Forms;
 
 namespace TaraSync
 {
-    public partial class Form1 : Form
+    public partial class Form1 : Form, IView
     {
         public Form1()
         {
             InitializeComponent();
         }
+
+        string IView.GetPathA()
     }
 }

@@ -8,5 +8,11 @@ namespace TaraSync
 {
     interface IView
     {
+        string GetPathA();
+        string GetPathB();
+        void UpdateUsers(List<string> users);
+        void ShowMessage(string message);
+        event EventHandler<EventArgs> UpdateUserList;
+        event EventHandler<EventArgs> TryLogin;
     }
 }
