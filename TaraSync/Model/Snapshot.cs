@@ -59,7 +59,10 @@ namespace TaraSync.Model
         {
             var id = Guid.NewGuid().ToString();
             Directory.CreateDirectory(Path.Combine(syncTarget.AConfig, id));
+            new DirectoryInfo(syncTarget.AConfig).Attributes |= FileAttributes.Hidden;
             Directory.CreateDirectory(Path.Combine(syncTarget.BConfig, id));
+            new DirectoryInfo(syncTarget.BConfig).Attributes |= FileAttributes.Hidden;
+
             var fileName = Path.Combine(syncTarget.AConfig, id, "snapshot");
             using (var fs = new FileStream(fileName, FileMode.Create, FileAccess.Write))
             {
