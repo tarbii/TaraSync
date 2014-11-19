@@ -42,6 +42,7 @@
             this.textBox1.Name = "textBox1";
             this.textBox1.Size = new System.Drawing.Size(260, 20);
             this.textBox1.TabIndex = 0;
+            this.textBox1.Text = "c:\\TestCases\\Case1\\A\\";
             // 
             // textBox2
             // 
@@ -49,6 +50,7 @@
             this.textBox2.Name = "textBox2";
             this.textBox2.Size = new System.Drawing.Size(260, 20);
             this.textBox2.TabIndex = 1;
+            this.textBox2.Text = "c:\\TestCases\\Case1\\B\\";
             // 
             // button1
             // 
@@ -73,8 +75,8 @@
             // toolStripStatusLabel1
             // 
             this.toolStripStatusLabel1.Name = "toolStripStatusLabel1";
-            this.toolStripStatusLabel1.Size = new System.Drawing.Size(118, 17);
-            this.toolStripStatusLabel1.Text = "toolStripStatusLabel1";
+            this.toolStripStatusLabel1.Size = new System.Drawing.Size(42, 17);
+            this.toolStripStatusLabel1.Text = "Ready.";
             // 
             // Form1
             // 

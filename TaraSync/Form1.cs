@@ -23,6 +23,19 @@ namespace TaraSync
             MessageBox.Show(message);
         }
 
+        public void UpdateProgress(string stage, int progress, int count)
+        {
+            if (count == 0)
+            {
+                toolStripStatusLabel1.Text = stage;
+            }
+            else
+            {
+                toolStripStatusLabel1.Text =
+                    string.Format("{0}: {1}/{2}", stage, progress, count);
+            }
+        }
+
         public event EventHandler<SyncRequestEventArgs> SyncRequested;
 
         private void button1_Click(object sender, EventArgs e)

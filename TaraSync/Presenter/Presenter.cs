@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading;
 using TaraSync.Model;
 
 namespace TaraSync.Presenter
@@ -14,18 +15,27 @@ namespace TaraSync.Presenter
 
         void view_SyncRequested(object sender, SyncRequestEventArgs e)
         {
-            var sync = new Synchronizer(new SyncTarget(e.PathA, e.PathB));
-
-            try
+            ThreadPool.QueueUserWorkItem(delegate
             {
-                sync.Synchronize();
-            }
-            catch (Exception ex)
-            {
-                view.ShowMessage("Failed with exception " + ex);
-            }
+                var sync = new Synchronizer(new SyncTarget(e.PathA, e.PathB));
+                sync.ProgressUpdated += sync_ProgressUpdated;
+                try
+                {
+                    sync.Synchronize();
+                }
+                catch (Exception ex)
+                {
+                    view.ShowMessage("Failed with exception " + ex);
+                }
 
-            view.ShowMessage("Done");
+                view.ShowMessage("Done");
+                sync.ProgressUpdated -= sync_ProgressUpdated;
+            });
+        }
+
+        void sync_ProgressUpdated(object sender, ProgressUpdatedEventArgs e)
+        {
+            view.UpdateProgress(e.Stage, e.Progress, e.Count);
         }
         
     }

@@ -2,16 +2,13 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Runtime.Serialization.Json;
 using System.Security.Cryptography;
-using System.Xml.Serialization;
 
 namespace TaraSync.Model
 {
     public class Synchronizer
     {
         public const string ConfigDirName = ".tarasync";
-
 
         private readonly SyncTarget syncTarget;
 
@@ -26,20 +23,26 @@ namespace TaraSync.Model
         /// <param name="syncIdTest">For test only</param>
         public void Synchronize(string syncIdTest = null)
         {
+            OnProgressUpdate("Loading snapshot...", 0, 0);
             var snapshot = GetSnapshot();
             if (snapshot != null)
             {
                 snapshot.IsInUse = true;
             }
             var xDir = snapshot == null ? new Dictionary<string, string>() : snapshot.Data;
+            OnProgressUpdate("Examining files...", 1, 2);
             var aDir = GetAllFiles(syncTarget.A);
+            OnProgressUpdate("Examining files...", 2, 2);
             var bDir = GetAllFiles(syncTarget.B);
             var syncId = snapshot != null
                 ? snapshot.Id
                 : syncIdTest ?? Guid.NewGuid().ToString();
 
-            foreach (var fileName in xDir.Keys.Union(aDir.Keys).Union(bDir.Keys))
+            var allFiles = xDir.Keys.Union(aDir.Keys).Union(bDir.Keys).ToArray();
+            var i = 1;
+            foreach (var fileName in allFiles)
             {
+                OnProgressUpdate("Synchronizing file...", i++, allFiles.Length);
                 var inA = aDir.ContainsKey(fileName);
                 var inB = bDir.ContainsKey(fileName);
                 var inX = xDir.ContainsKey(fileName);
@@ -89,11 +92,26 @@ namespace TaraSync.Model
                 ResolveConflict(fileName, option, syncId);
             }
 
+            OnProgressUpdate("Finalizing synchronization...", 0, 0);
             var newSnapshot = GetAllFiles(syncTarget.A);
             Snapshot.SerializeSnapshot(newSnapshot, syncTarget);
             if (snapshot != null)
             {
                 snapshot.DeleteYourself();
+            }
+            OnProgressUpdate("Done", 0, 0);
+        }
+
+        public event EventHandler<ProgressUpdatedEventArgs> ProgressUpdated;
+
+        private void OnProgressUpdate(string stage, int progress, int count)
+        {
+            var args = new ProgressUpdatedEventArgs(stage, progress, count);
+
+            var handler = ProgressUpdated;
+            if (handler != null)
+            {
+                handler(this, args);
             }
         }
         
