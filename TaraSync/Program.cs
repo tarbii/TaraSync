@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using ThePresenter = TaraSync.Presenter.Presenter;
 
 namespace TaraSync
 {
@@ -16,7 +17,11 @@ namespace TaraSync
         {
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
-            Application.Run(new Form1());
+
+            var f1 = new Form1();
+            var pr = new ThePresenter(f1);
+
+            Application.Run(f1);
         }
     }
 }
