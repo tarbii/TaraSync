@@ -117,7 +117,7 @@ namespace TaraSync.Model
                     string.Format("{0}.{1}.{2}{3}", name, "B", syncId, ext)),
             };
 
-            if ((option & ConflictResolutionOption.RenameA) != ConflictResolutionOption.None)
+            if ((option & ConflictResolutionOption.RenameA) == ConflictResolutionOption.RenameA)
             {
                 if (File.Exists(names.A))
                 {
@@ -126,7 +126,7 @@ namespace TaraSync.Model
                     File.Copy(names.AA, names.BA);
                 }
             }
-            if ((option & ConflictResolutionOption.RenameB) != ConflictResolutionOption.None)
+            if ((option & ConflictResolutionOption.RenameB) == ConflictResolutionOption.RenameB)
             {
                 if (File.Exists(names.B))
                 {
@@ -135,7 +135,7 @@ namespace TaraSync.Model
                     File.Copy(names.BB, names.AB);
                 }
             }
-            if ((option & ConflictResolutionOption.UseA) != ConflictResolutionOption.None)
+            if ((option & ConflictResolutionOption.UseA) == ConflictResolutionOption.UseA)
             {
                 if (File.Exists(names.A))
                 {
@@ -147,7 +147,7 @@ namespace TaraSync.Model
                     File.Delete(names.B);
                 }
             }
-            if ((option & ConflictResolutionOption.UseB) != ConflictResolutionOption.None)
+            if ((option & ConflictResolutionOption.UseB) == ConflictResolutionOption.UseB)
             {
                 if (File.Exists(names.B))
                 {
