@@ -46,6 +46,7 @@ namespace TaraSync.Model
             {
                 return new DirectoryInfo(folderPath).EnumerateFiles("*", SearchOption.AllDirectories); 
             }
+            return null;
         }
     }
 }

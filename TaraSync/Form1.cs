@@ -3,10 +3,12 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
 using System.Drawing;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using TaraSync.Model;
 using TaraSync.Presenter;
 
 namespace TaraSync
@@ -40,23 +42,36 @@ namespace TaraSync
 
         private void button1_Click(object sender, EventArgs e)
         {
-            if (string.IsNullOrWhiteSpace(textBox1.Text))
+            if (string.IsNullOrWhiteSpace(textBoxPathA.Text))
             {
                 MessageBox.Show("Enter first folder to synchronize.");
                 return;
             }
-            if (string.IsNullOrWhiteSpace(textBox2.Text))
+            if (string.IsNullOrWhiteSpace(textBoxPathB.Text))
             {
                 MessageBox.Show("Enter second folder to synchronize.");
                 return;
             }
 
-            var args = new SyncRequestEventArgs(textBox1.Text, textBox2.Text);
+            var args = new SyncRequestEventArgs(textBoxPathA.Text, textBoxPathB.Text);
 
             var handler = SyncRequested;
             if (handler != null)
             {
                 handler(this, args);
+            }
+        }
+
+        public void RepresentFiles(IEnumerable<FileInfo> filesList)
+        {
+            
+        }
+
+        private void textBox1_TextChanged(object sender, EventArgs e)
+        {
+            if (Directory.Exists(textBoxPathA.Text))
+            {
+                listBoxFilesA.DataSource = EditingFiles.GetFiles(textBoxPathA.Text).ToList(); 
             }
         }
     }
