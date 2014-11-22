@@ -115,7 +115,8 @@ namespace TaraSync.Model
             }
         }
         
-        private void ResolveConflict(string fileName, ConflictResolutionOption option, string syncId)
+        private void ResolveConflict(string fileName, 
+            ConflictResolutionOption option, string syncId)
         {
             var name = Path.Combine(
                 Path.GetDirectoryName(fileName),

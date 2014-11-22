@@ -69,6 +69,11 @@ namespace TaraSync
             
         }
 
+        private enum FolderRepresentPosition
+        {
+            
+        }
+
         private void textBoxPathA_TextChanged(object sender, EventArgs e)
         {
             if (Directory.Exists(textBoxPathA.Text))
@@ -98,10 +103,18 @@ namespace TaraSync
         private void buttonDeleteA_Click(object sender, EventArgs e)
         {
             EditingFiles.RemoveFile(((FileInfo)listBoxFilesA.SelectedItem).FullName);
+            if (Directory.Exists(textBoxPathA.Text))
+            {
+                listBoxFilesA.DataSource = EditingFiles.GetFiles(textBoxPathA.Text).ToList();
+            }
         }
         private void buttonDeleteB_Click(object sender, EventArgs e)
         {
             EditingFiles.RemoveFile(((FileInfo)listBoxFilesB.SelectedItem).FullName);
+            if (Directory.Exists(textBoxPathB.Text))
+            {
+                listBoxFilesB.DataSource = EditingFiles.GetFiles(textBoxPathB.Text).ToList();
+            }
         }
     }
 }
