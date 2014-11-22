@@ -18,6 +18,8 @@ namespace TaraSync
         public Form1()
         {
             InitializeComponent();
+            listBoxFilesA.DataSource = EditingFiles.GetFiles(textBoxPathA.Text).ToList();
+            listBoxFilesB.DataSource = EditingFiles.GetFiles(textBoxPathB.Text).ToList();
         }
 
         void IView.ShowMessage(string message)
@@ -40,7 +42,7 @@ namespace TaraSync
 
         public event EventHandler<SyncRequestEventArgs> SyncRequested;
 
-        private void button1_Click(object sender, EventArgs e)
+        private void buttonSync_Click(object sender, EventArgs e)
         {
             if (string.IsNullOrWhiteSpace(textBoxPathA.Text))
             {
@@ -67,12 +69,39 @@ namespace TaraSync
             
         }
 
-        private void textBox1_TextChanged(object sender, EventArgs e)
+        private void textBoxPathA_TextChanged(object sender, EventArgs e)
         {
             if (Directory.Exists(textBoxPathA.Text))
             {
                 listBoxFilesA.DataSource = EditingFiles.GetFiles(textBoxPathA.Text).ToList(); 
             }
+        }
+
+        private void textBoxPathB_TextChanged(object sender, EventArgs e)
+        {
+            if (Directory.Exists(textBoxPathB.Text))
+            {
+                listBoxFilesB.DataSource = EditingFiles.GetFiles(textBoxPathB.Text).ToList();
+            }
+        }
+
+        private void buttonOpenA_Click(object sender, EventArgs e)
+        {
+            EditingFiles.EditFile(((FileInfo)listBoxFilesA.SelectedItem).FullName);
+        }
+
+        private void buttonOpenB_Click(object sender, EventArgs e)
+        {
+            EditingFiles.EditFile(((FileInfo)listBoxFilesB.SelectedItem).FullName);
+        }
+
+        private void buttonDeleteA_Click(object sender, EventArgs e)
+        {
+            EditingFiles.RemoveFile(((FileInfo)listBoxFilesA.SelectedItem).FullName);
+        }
+        private void buttonDeleteB_Click(object sender, EventArgs e)
+        {
+            EditingFiles.RemoveFile(((FileInfo)listBoxFilesB.SelectedItem).FullName);
         }
     }
 }
