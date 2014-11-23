@@ -118,9 +118,18 @@ namespace TaraSync
                 default:
                     return;
             }
-
-            listBox.DataSource = fileList == null ? null : fileList
-                .Select(x => x.FullName).ToList();
+            var dataSource = fileList == null
+                ? null
+                : fileList
+                    .Select(x => x.FullName).ToList();
+            if (InvokeRequired)
+            {
+                Invoke((Action)(() => listBox.DataSource = dataSource));
+            }
+            else
+            {
+                listBox.DataSource = dataSource; 
+            }
         }
 
         private void textBoxPath_TextChanged(object sender, EventArgs e)

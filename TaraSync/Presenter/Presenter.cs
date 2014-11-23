@@ -56,6 +56,8 @@ namespace TaraSync.Presenter
                     view.ShowMessage("Failed with exception " + ex);
                 }
 
+                view.UpdateFileList(FolderRepresentPosition.A, FileEditor.GetFiles(e.PathA));
+                view.UpdateFileList(FolderRepresentPosition.B, FileEditor.GetFiles(e.PathB));
                 view.ShowMessage("Done");
                 sync.ProgressUpdated -= sync_ProgressUpdated;
                 syncIsOn = false;
