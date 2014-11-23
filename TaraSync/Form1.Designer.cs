@@ -37,10 +37,10 @@
             this.listBoxFilesB = new System.Windows.Forms.ListBox();
             this.textBoxPathB = new System.Windows.Forms.TextBox();
             this.panel1 = new System.Windows.Forms.Panel();
-            this.buttonOpenA = new System.Windows.Forms.Button();
-            this.buttonOpenB = new System.Windows.Forms.Button();
-            this.buttonDeleteB = new System.Windows.Forms.Button();
             this.buttonDeleteA = new System.Windows.Forms.Button();
+            this.buttonDeleteB = new System.Windows.Forms.Button();
+            this.buttonOpenB = new System.Windows.Forms.Button();
+            this.buttonOpenA = new System.Windows.Forms.Button();
             this.statusStrip1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).BeginInit();
             this.splitContainer1.Panel1.SuspendLayout();
@@ -111,7 +111,7 @@
             this.textBoxPathA.Size = new System.Drawing.Size(549, 20);
             this.textBoxPathA.TabIndex = 5;
             this.textBoxPathA.Text = "c:\\TestCases\\Case1\\A\\";
-            this.textBoxPathA.TextChanged += new System.EventHandler(this.textBoxPathA_TextChanged);
+            this.textBoxPathA.TextChanged += new System.EventHandler(this.textBoxPath_TextChanged);
             // 
             // listBoxFilesB
             // 
@@ -130,7 +130,7 @@
             this.textBoxPathB.Size = new System.Drawing.Size(545, 20);
             this.textBoxPathB.TabIndex = 6;
             this.textBoxPathB.Text = "c:\\TestCases\\Case1\\B\\";
-            this.textBoxPathB.TextChanged += new System.EventHandler(this.textBoxPathB_TextChanged);
+            this.textBoxPathB.TextChanged += new System.EventHandler(this.textBoxPath_TextChanged);
             // 
             // panel1
             // 
@@ -145,25 +145,15 @@
             this.panel1.Size = new System.Drawing.Size(1098, 35);
             this.panel1.TabIndex = 7;
             // 
-            // buttonOpenA
+            // buttonDeleteA
             // 
-            this.buttonOpenA.Location = new System.Drawing.Point(97, 6);
-            this.buttonOpenA.Name = "buttonOpenA";
-            this.buttonOpenA.Size = new System.Drawing.Size(88, 23);
-            this.buttonOpenA.TabIndex = 3;
-            this.buttonOpenA.Text = "Open";
-            this.buttonOpenA.UseVisualStyleBackColor = true;
-            this.buttonOpenA.Click += new System.EventHandler(this.buttonOpenA_Click);
-            // 
-            // buttonOpenB
-            // 
-            this.buttonOpenB.Location = new System.Drawing.Point(553, 6);
-            this.buttonOpenB.Name = "buttonOpenB";
-            this.buttonOpenB.Size = new System.Drawing.Size(75, 23);
-            this.buttonOpenB.TabIndex = 4;
-            this.buttonOpenB.Text = "Open";
-            this.buttonOpenB.UseVisualStyleBackColor = true;
-            this.buttonOpenB.Click += new System.EventHandler(this.buttonOpenB_Click);
+            this.buttonDeleteA.Location = new System.Drawing.Point(191, 6);
+            this.buttonDeleteA.Name = "buttonDeleteA";
+            this.buttonDeleteA.Size = new System.Drawing.Size(75, 23);
+            this.buttonDeleteA.TabIndex = 5;
+            this.buttonDeleteA.Text = "Delete";
+            this.buttonDeleteA.UseVisualStyleBackColor = true;
+            this.buttonDeleteA.Click += new System.EventHandler(this.buttonDeleteA_Click);
             // 
             // buttonDeleteB
             // 
@@ -175,15 +165,25 @@
             this.buttonDeleteB.UseVisualStyleBackColor = true;
             this.buttonDeleteB.Click += new System.EventHandler(this.buttonDeleteB_Click);
             // 
-            // buttonDeleteA
+            // buttonOpenB
             // 
-            this.buttonDeleteA.Location = new System.Drawing.Point(191, 6);
-            this.buttonDeleteA.Name = "buttonDeleteA";
-            this.buttonDeleteA.Size = new System.Drawing.Size(75, 23);
-            this.buttonDeleteA.TabIndex = 5;
-            this.buttonDeleteA.Text = "Delete";
-            this.buttonDeleteA.UseVisualStyleBackColor = true;
-            this.buttonDeleteA.Click += new System.EventHandler(this.buttonDeleteA_Click);
+            this.buttonOpenB.Location = new System.Drawing.Point(553, 6);
+            this.buttonOpenB.Name = "buttonOpenB";
+            this.buttonOpenB.Size = new System.Drawing.Size(75, 23);
+            this.buttonOpenB.TabIndex = 4;
+            this.buttonOpenB.Text = "Open";
+            this.buttonOpenB.UseVisualStyleBackColor = true;
+            this.buttonOpenB.Click += new System.EventHandler(this.buttonOpenB_Click);
+            // 
+            // buttonOpenA
+            // 
+            this.buttonOpenA.Location = new System.Drawing.Point(97, 6);
+            this.buttonOpenA.Name = "buttonOpenA";
+            this.buttonOpenA.Size = new System.Drawing.Size(88, 23);
+            this.buttonOpenA.TabIndex = 3;
+            this.buttonOpenA.Text = "Open";
+            this.buttonOpenA.UseVisualStyleBackColor = true;
+            this.buttonOpenA.Click += new System.EventHandler(this.buttonOpenA_Click);
             // 
             // Form1
             // 

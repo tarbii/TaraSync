@@ -12,6 +12,12 @@ namespace TaraSync.Presenter
         {
             view = newView;
             view.SyncRequested += view_SyncRequested;
+            view.FileListUpdateRequsted += view_FileListUpdateRequsted;
+        }
+
+        void view_FileListUpdateRequsted(object sender, FileListUpdateRequstedEventArgs e)
+        {
+            view.UpdateFileList(e.Position, FileEditor.GetFiles(e.Path));
         }
 
         bool syncIsOn = false;

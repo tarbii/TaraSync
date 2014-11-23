@@ -18,8 +18,13 @@ namespace TaraSync
         public Form1()
         {
             InitializeComponent();
-            listBoxFilesA.DataSource = EditingFiles.GetFiles(textBoxPathA.Text).ToList();
-            listBoxFilesB.DataSource = EditingFiles.GetFiles(textBoxPathB.Text).ToList();
+            textBoxPathA.Tag = FolderRepresentPosition.Left;
+            textBoxPathB.Tag = FolderRepresentPosition.Right;
+
+            UpdateFileList(FolderRepresentPosition.Left,
+                FileEditor.GetFiles(textBoxPathA.Text));
+            UpdateFileList(FolderRepresentPosition.Right,
+                 FileEditor.GetFiles(textBoxPathB.Text));
         }
 
         void IView.ShowMessage(string message)
@@ -41,7 +46,7 @@ namespace TaraSync
         }
 
         public event EventHandler<SyncRequestEventArgs> SyncRequested;
-
+        public event EventHandler<FileListUpdateRequstedEventArgs> FileListUpdateRequsted;
         private void buttonSync_Click(object sender, EventArgs e)
         {
             if (string.IsNullOrWhiteSpace(textBoxPathA.Text))
@@ -64,56 +69,76 @@ namespace TaraSync
             }
         }
 
-        public void RepresentFiles(IEnumerable<FileInfo> filesList)
+        public void UpdateFileList(FolderRepresentPosition position,
+            IEnumerable<FileInfo> fileList)
         {
-            
-        }
+            ListBox listBox;
 
-        private enum FolderRepresentPosition
-        {
-            
-        }
-
-        private void textBoxPathA_TextChanged(object sender, EventArgs e)
-        {
-            if (Directory.Exists(textBoxPathA.Text))
+            switch (position)
             {
-                listBoxFilesA.DataSource = EditingFiles.GetFiles(textBoxPathA.Text).ToList(); 
+                case FolderRepresentPosition.Left:
+                    listBox = listBoxFilesA;
+                    break;
+
+                case FolderRepresentPosition.Right:
+                    listBox = listBoxFilesB;
+                    break;
+
+                default:
+                    return;
             }
+
+            listBox.DataSource = fileList == null ? null : fileList
+                .Select(x => x.FullName).ToList();
+        }
+        
+        private void textBoxPath_TextChanged(object sender, EventArgs e)
+        {
+            var textBox = sender as TextBox;
+            if (textBox == null)
+            {
+                return;
+            }
+
+            OnFileListUpdateRequest(textBox.Text, (FolderRepresentPosition)textBox.Tag);
         }
 
-        private void textBoxPathB_TextChanged(object sender, EventArgs e)
+        private void OnFileListUpdateRequest(string path, 
+            FolderRepresentPosition position)
         {
-            if (Directory.Exists(textBoxPathB.Text))
+            var args = new FileListUpdateRequstedEventArgs(path, position);
+
+            var handler = FileListUpdateRequsted;
+            if (handler != null)
             {
-                listBoxFilesB.DataSource = EditingFiles.GetFiles(textBoxPathB.Text).ToList();
+                handler(this, args);
             }
         }
 
         private void buttonOpenA_Click(object sender, EventArgs e)
         {
-            EditingFiles.EditFile(((FileInfo)listBoxFilesA.SelectedItem).FullName);
+            FileEditor.EditFile((string)listBoxFilesA.SelectedItem);
         }
 
         private void buttonOpenB_Click(object sender, EventArgs e)
         {
-            EditingFiles.EditFile(((FileInfo)listBoxFilesB.SelectedItem).FullName);
+            FileEditor.EditFile((string)listBoxFilesB.SelectedItem);
         }
 
         private void buttonDeleteA_Click(object sender, EventArgs e)
         {
-            EditingFiles.RemoveFile(((FileInfo)listBoxFilesA.SelectedItem).FullName);
+            FileEditor.RemoveFile((string)listBoxFilesA.SelectedItem);
             if (Directory.Exists(textBoxPathA.Text))
             {
-                listBoxFilesA.DataSource = EditingFiles.GetFiles(textBoxPathA.Text).ToList();
+                listBoxFilesA.DataSource = FileEditor.GetFiles(textBoxPathA.Text).ToList();
             }
         }
         private void buttonDeleteB_Click(object sender, EventArgs e)
         {
-            EditingFiles.RemoveFile(((FileInfo)listBoxFilesB.SelectedItem).FullName);
+            FileEditor.RemoveFile((string)listBoxFilesB.SelectedItem);
             if (Directory.Exists(textBoxPathB.Text))
             {
-                listBoxFilesB.DataSource = EditingFiles.GetFiles(textBoxPathB.Text).ToList();
+                listBoxFilesB.DataSource = FileEditor.GetFiles(textBoxPathB.Text).ToList();
             }
         }
     }

@@ -51,8 +51,10 @@
     <Compile Include="Form1.Designer.cs">
       <DependentUpon>Form1.cs</DependentUpon>
     </Compile>
-    <Compile Include="Model\EditingFiles.cs" />
+    <Compile Include="Model\FileEditor.cs" />
     <Compile Include="Model\ProgressUpdatedEventArgs.cs" />
+    <Compile Include="Presenter\FolderRepresentPosition.cs" />
+    <Compile Include="Presenter\FileListUpdateRequstedEventArgs.cs" />
     <Compile Include="Presenter\IView.cs" />
     <Compile Include="Model\Synchronizer.cs" />
     <Compile Include="Presenter\Presenter.cs" />

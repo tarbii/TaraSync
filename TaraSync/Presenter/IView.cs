@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.IO;
 
 namespace TaraSync.Presenter
 {
@@ -7,8 +9,11 @@ namespace TaraSync.Presenter
         void ShowMessage(string message);
         
         void UpdateProgress(string stage, int progress, int count);
-        
+
+        void UpdateFileList(FolderRepresentPosition position, IEnumerable<FileInfo> fileList);
+
         event EventHandler<SyncRequestEventArgs> SyncRequested;
+        event EventHandler<FileListUpdateRequstedEventArgs> FileListUpdateRequsted;
 
     }
 }

@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace TaraSync.Model
 {
-    class EditingFiles
+    class FileEditor
     {
         public static void RemoveFile(string filePath)
         {
