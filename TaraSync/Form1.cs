@@ -20,11 +20,6 @@ namespace TaraSync
             InitializeComponent();
             textBoxPathA.Tag = FolderRepresentPosition.Left;
             textBoxPathB.Tag = FolderRepresentPosition.Right;
-
-            UpdateFileList(FolderRepresentPosition.Left,
-                FileEditor.GetFiles(textBoxPathA.Text));
-            UpdateFileList(FolderRepresentPosition.Right,
-                 FileEditor.GetFiles(textBoxPathB.Text));
         }
 
         void IView.ShowMessage(string message)
@@ -157,6 +152,12 @@ namespace TaraSync
         private void buttonDeleteB_Click(object sender, EventArgs e)
         {
             OnFileDelete((string)listBoxFilesB.SelectedItem);
+            OnFileListUpdateRequest(textBoxPathB.Text, FolderRepresentPosition.B);
+        }
+
+        private void Form1_Load(object sender, EventArgs e)
+        {
+            OnFileListUpdateRequest(textBoxPathA.Text, FolderRepresentPosition.A);
             OnFileListUpdateRequest(textBoxPathB.Text, FolderRepresentPosition.B);
         }
     }
