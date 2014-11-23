@@ -15,6 +15,12 @@ namespace TaraSync.Presenter
             view.FileListUpdateRequsted += view_FileListUpdateRequsted;
             view.FileOpen += view_FileOpen;
             view.FileDelete += view_FileDelete;
+            view.FileCreate += view_FileCreate;
+        }
+
+        void view_FileCreate(object sender, FileCreateEventArgs e)
+        {
+            FileEditor.CreateFile(e.Path);
         }
 
         void view_FileDelete(object sender, FileDeleteEventArgs e)

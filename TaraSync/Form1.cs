@@ -29,14 +29,15 @@ namespace TaraSync
 
         public void UpdateProgress(string stage, int progress, int count)
         {
-            if (count == 0)
+            var text = count == 0 ? stage : string.Format("{0}: {1}/{2}", stage, progress, count);
+
+            if (InvokeRequired)
             {
-                toolStripStatusLabel1.Text = stage;
+                Invoke((Action)(() => toolStripStatusLabel1.Text = text));
             }
             else
             {
-                toolStripStatusLabel1.Text =
-                    string.Format("{0}: {1}/{2}", stage, progress, count);
+                toolStripStatusLabel1.Text = text;
             }
         }
 
@@ -44,7 +45,18 @@ namespace TaraSync
         public event EventHandler<FileListUpdateRequstedEventArgs> FileListUpdateRequsted;
         public event EventHandler<FileOpenEventArgs> FileOpen;
         public event EventHandler<FileDeleteEventArgs> FileDelete;
+        public event EventHandler<FileCreateEventArgs> FileCreate;
 
+        private void OnFileCreate(string path)
+        {
+            var args = new FileCreateEventArgs(path);
+
+            var handler = FileCreate;
+            if (handler != null)
+            {
+                handler(this, args);
+            }
+        }
         private void OnFileDelete(string path)
         {
             var args = new FileDeleteEventArgs(path);
@@ -167,6 +179,32 @@ namespace TaraSync
         private void Form1_Load(object sender, EventArgs e)
         {
             OnFileListUpdateRequest(textBoxPathA.Text, FolderRepresentPosition.A);
+            OnFileListUpdateRequest(textBoxPathB.Text, FolderRepresentPosition.B);
+        }
+
+        private void buttonCreateA_Click(object sender, EventArgs e)
+        {
+            if (string.IsNullOrWhiteSpace(textBoxCreateA.Text))
+            {
+                MessageBox.Show("Enter file name.");
+                return;
+            }
+
+            var path = Path.Combine(textBoxPathA.Text, textBoxCreateA.Text);
+            OnFileCreate(path);
+            OnFileListUpdateRequest(textBoxPathA.Text, FolderRepresentPosition.A);
+        }
+
+        private void buttonCreateB_Click(object sender, EventArgs e)
+        {
+            if (string.IsNullOrWhiteSpace(textBoxCreateB.Text))
+            {
+                MessageBox.Show("Enter file name.");
+                return;
+            }
+
+            var path = Path.Combine(textBoxPathB.Text, textBoxCreateB.Text);
+            OnFileCreate(path);
             OnFileListUpdateRequest(textBoxPathB.Text, FolderRepresentPosition.B);
         }
     }
