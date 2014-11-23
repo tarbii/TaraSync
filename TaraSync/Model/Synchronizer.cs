@@ -182,11 +182,7 @@ namespace TaraSync.Model
 
         private ConflictResolutionOption GetConflictResolutionOption(string fileName)
         {
-#if DEBUG
             return ConflictResolutionOption.RenameBoth;
-#else
-            throw new NotImplementedException();
-#endif
         }
 
         [Flags]

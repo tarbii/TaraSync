@@ -110,7 +110,6 @@
             this.textBoxPathA.Name = "textBoxPathA";
             this.textBoxPathA.Size = new System.Drawing.Size(549, 20);
             this.textBoxPathA.TabIndex = 5;
-            this.textBoxPathA.Text = "c:\\TestCases\\Case1\\A\\";
             this.textBoxPathA.TextChanged += new System.EventHandler(this.textBoxPath_TextChanged);
             // 
             // listBoxFilesB
@@ -129,7 +128,6 @@
             this.textBoxPathB.Name = "textBoxPathB";
             this.textBoxPathB.Size = new System.Drawing.Size(545, 20);
             this.textBoxPathB.TabIndex = 6;
-            this.textBoxPathB.Text = "c:\\TestCases\\Case1\\B\\";
             this.textBoxPathB.TextChanged += new System.EventHandler(this.textBoxPath_TextChanged);
             // 
             // buttonDeleteB
