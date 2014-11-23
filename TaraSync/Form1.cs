@@ -48,6 +48,18 @@ namespace TaraSync
         public event EventHandler<SyncRequestEventArgs> SyncRequested;
         public event EventHandler<FileListUpdateRequstedEventArgs> FileListUpdateRequsted;
         public event EventHandler<FileOpenEventArgs> FileOpen;
+        public event EventHandler<FileDeleteEventArgs> FileDelete;
+
+        private void OnFileDelete(string path)
+        {
+            var args = new FileDeleteEventArgs(path);
+
+            var handler = FileDelete;
+            if (handler != null)
+            {
+                handler(this, args);
+            }
+        }
 
         private void OnFileOpen(string path)
         {
@@ -60,8 +72,7 @@ namespace TaraSync
             }
         }
 
-        private void OnFileListUpdateRequest(string path,
-            FolderRepresentPosition position)
+        private void OnFileListUpdateRequest(string path, FolderRepresentPosition position)
         {
             var args = new FileListUpdateRequstedEventArgs(path, position);
 
@@ -140,19 +151,13 @@ namespace TaraSync
 
         private void buttonDeleteA_Click(object sender, EventArgs e)
         {
-            FileEditor.RemoveFile((string)listBoxFilesA.SelectedItem);
-            if (Directory.Exists(textBoxPathA.Text))
-            {
-                listBoxFilesA.DataSource = FileEditor.GetFiles(textBoxPathA.Text).ToList();
-            }
+            OnFileDelete((string)listBoxFilesA.SelectedItem);
+            OnFileListUpdateRequest(textBoxPathA.Text, FolderRepresentPosition.A);
         }
         private void buttonDeleteB_Click(object sender, EventArgs e)
         {
-            FileEditor.RemoveFile((string)listBoxFilesB.SelectedItem);
-            if (Directory.Exists(textBoxPathB.Text))
-            {
-                listBoxFilesB.DataSource = FileEditor.GetFiles(textBoxPathB.Text).ToList();
-            }
+            OnFileDelete((string)listBoxFilesB.SelectedItem);
+            OnFileListUpdateRequest(textBoxPathB.Text, FolderRepresentPosition.B);
         }
     }
 }

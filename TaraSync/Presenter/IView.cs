@@ -15,6 +15,7 @@ namespace TaraSync.Presenter
         event EventHandler<SyncRequestEventArgs> SyncRequested;
         event EventHandler<FileListUpdateRequstedEventArgs> FileListUpdateRequsted;
         event EventHandler<FileOpenEventArgs> FileOpen;
+        event EventHandler<FileDeleteEventArgs> FileDelete;
 
     }
 }

@@ -53,6 +53,7 @@
     </Compile>
     <Compile Include="Model\FileEditor.cs" />
     <Compile Include="Model\ProgressUpdatedEventArgs.cs" />
+    <Compile Include="Presenter\FileDeleteEventArgs.cs" />
     <Compile Include="Presenter\FileOpenEventArgs.cs" />
     <Compile Include="Presenter\FolderRepresentPosition.cs" />
     <Compile Include="Presenter\FileListUpdateRequstedEventArgs.cs" />
