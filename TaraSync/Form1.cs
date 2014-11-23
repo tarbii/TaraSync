@@ -47,6 +47,31 @@ namespace TaraSync
 
         public event EventHandler<SyncRequestEventArgs> SyncRequested;
         public event EventHandler<FileListUpdateRequstedEventArgs> FileListUpdateRequsted;
+        public event EventHandler<FileOpenEventArgs> FileOpen;
+
+        private void OnFileOpen(string path)
+        {
+            var args = new FileOpenEventArgs(path);
+
+            var handler = FileOpen;
+            if (handler != null)
+            {
+                handler(this, args);
+            }
+        }
+
+        private void OnFileListUpdateRequest(string path,
+            FolderRepresentPosition position)
+        {
+            var args = new FileListUpdateRequstedEventArgs(path, position);
+
+            var handler = FileListUpdateRequsted;
+            if (handler != null)
+            {
+                handler(this, args);
+            }
+        }
+
         private void buttonSync_Click(object sender, EventArgs e)
         {
             if (string.IsNullOrWhiteSpace(textBoxPathA.Text))
@@ -91,7 +116,7 @@ namespace TaraSync
             listBox.DataSource = fileList == null ? null : fileList
                 .Select(x => x.FullName).ToList();
         }
-        
+
         private void textBoxPath_TextChanged(object sender, EventArgs e)
         {
             var textBox = sender as TextBox;
@@ -103,26 +128,14 @@ namespace TaraSync
             OnFileListUpdateRequest(textBox.Text, (FolderRepresentPosition)textBox.Tag);
         }
 
-        private void OnFileListUpdateRequest(string path, 
-            FolderRepresentPosition position)
-        {
-            var args = new FileListUpdateRequstedEventArgs(path, position);
-
-            var handler = FileListUpdateRequsted;
-            if (handler != null)
-            {
-                handler(this, args);
-            }
-        }
-
         private void buttonOpenA_Click(object sender, EventArgs e)
         {
-            FileEditor.EditFile((string)listBoxFilesA.SelectedItem);
+            OnFileOpen((string)listBoxFilesA.SelectedItem);
         }
 
         private void buttonOpenB_Click(object sender, EventArgs e)
         {
-            FileEditor.EditFile((string)listBoxFilesB.SelectedItem);
+            OnFileOpen((string)listBoxFilesB.SelectedItem);
         }
 
         private void buttonDeleteA_Click(object sender, EventArgs e)

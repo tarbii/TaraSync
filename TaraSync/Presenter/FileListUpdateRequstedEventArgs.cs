@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace TaraSync.Presenter
 {
-    public class FileListUpdateRequstedEventArgs
+    public class FileListUpdateRequstedEventArgs : EventArgs
     {
         public readonly string Path;
         public readonly FolderRepresentPosition Position;

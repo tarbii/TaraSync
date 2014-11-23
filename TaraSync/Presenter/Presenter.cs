@@ -13,6 +13,12 @@ namespace TaraSync.Presenter
             view = newView;
             view.SyncRequested += view_SyncRequested;
             view.FileListUpdateRequsted += view_FileListUpdateRequsted;
+            view.FileOpen += view_FileOpen;
+        }
+
+        void view_FileOpen(object sender, FileOpenEventArgs e)
+        {
+            FileEditor.EditFile(e.Path);
         }
 
         void view_FileListUpdateRequsted(object sender, FileListUpdateRequstedEventArgs e)
