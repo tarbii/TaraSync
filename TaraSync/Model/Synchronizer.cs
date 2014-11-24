@@ -23,6 +23,12 @@ namespace TaraSync.Model
         /// <param name="syncIdTest">For test only</param>
         public void Synchronize(string syncIdTest = null)
         {
+            if (!Directory.Exists(syncTarget.A) || !Directory.Exists(syncTarget.B))
+            {
+                OnProgressUpdate("Synchronization failed because one of the folders doesn't exsist", 0, 0);
+                throw new Exception("Synchronization failed because one of the folders doesn't exsist");
+            }
+
             OnProgressUpdate("Loading snapshot...", 0, 0);
             var snapshot = GetSnapshot();
             if (snapshot != null)
@@ -182,6 +188,7 @@ namespace TaraSync.Model
 
         private ConflictResolutionOption GetConflictResolutionOption(string fileName)
         {
+            //todo ask user what to do
             return ConflictResolutionOption.RenameBoth;
         }
 
@@ -219,7 +226,7 @@ namespace TaraSync.Model
 
             if (snapshotInUse != null && snapshotNotInUse == null)
             {
-                return AskUser(snapshotInUse);
+                return GetSnapshotReusageOption(snapshotInUse);
             }
 
             if (snapshotInUse != null)
@@ -229,7 +236,7 @@ namespace TaraSync.Model
             return snapshotNotInUse;
         }
 
-        private Snapshot AskUser(Snapshot snapshotInUse)
+        private Snapshot GetSnapshotReusageOption(Snapshot snapshotInUse)
         {
             //todo ask user what option to use
             //1. continue current sync (warn that it is insecure if any changes were made)

@@ -39,7 +39,7 @@ namespace TaraSync.Presenter
         }
 
         bool syncIsOn = false;
-        
+
         void view_SyncRequested(object sender, SyncRequestEventArgs e)
         {
             if (syncIsOn)
@@ -56,6 +56,8 @@ namespace TaraSync.Presenter
                 try
                 {
                     sync.Synchronize();
+                    view.ShowMessage("Done");
+
                 }
                 catch (Exception ex)
                 {
@@ -64,7 +66,6 @@ namespace TaraSync.Presenter
 
                 view.UpdateFileList(FolderRepresentPosition.A, FileEditor.GetFiles(e.PathA));
                 view.UpdateFileList(FolderRepresentPosition.B, FileEditor.GetFiles(e.PathB));
-                view.ShowMessage("Done");
                 sync.ProgressUpdated -= sync_ProgressUpdated;
                 syncIsOn = false;
             });
@@ -74,6 +75,6 @@ namespace TaraSync.Presenter
         {
             view.UpdateProgress(e.Stage, e.Progress, e.Count);
         }
-        
+
     }
 }

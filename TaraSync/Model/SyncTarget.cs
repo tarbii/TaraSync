@@ -5,9 +5,17 @@ namespace TaraSync.Model
     public class SyncTarget
     {
         public readonly string A;
-        public readonly string AConfig;
         public readonly string B;
-        public readonly string BConfig;
+
+        public string AConfig
+        {
+            get { return Path.Combine(A, Synchronizer.ConfigDirName); }
+        }
+
+        public string BConfig
+        {
+            get { return Path.Combine(B, Synchronizer.ConfigDirName); }
+        }
 
         public bool BothConfigsExist
         {
@@ -17,9 +25,7 @@ namespace TaraSync.Model
         public SyncTarget(string a, string b)
         {
             A = a;
-            AConfig = Path.Combine(A, Synchronizer.ConfigDirName);
             B = b;
-            BConfig = Path.Combine(B, Synchronizer.ConfigDirName);
         }
     }
 }

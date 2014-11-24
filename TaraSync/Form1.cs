@@ -33,7 +33,7 @@ namespace TaraSync
 
             if (InvokeRequired)
             {
-                Invoke((Action)(() => toolStripStatusLabel1.Text = text));
+                Invoke((Action) (() => toolStripStatusLabel1.Text = text));
             }
             else
             {
@@ -57,6 +57,7 @@ namespace TaraSync
                 handler(this, args);
             }
         }
+
         private void OnFileDelete(string path)
         {
             var args = new FileDeleteEventArgs(path);
@@ -136,11 +137,11 @@ namespace TaraSync
                     .Select(x => x.FullName).ToList();
             if (InvokeRequired)
             {
-                Invoke((Action)(() => listBox.DataSource = dataSource));
+                Invoke((Action) (() => listBox.DataSource = dataSource));
             }
             else
             {
-                listBox.DataSource = dataSource; 
+                listBox.DataSource = dataSource;
             }
         }
 
@@ -152,27 +153,28 @@ namespace TaraSync
                 return;
             }
 
-            OnFileListUpdateRequest(textBox.Text, (FolderRepresentPosition)textBox.Tag);
+            OnFileListUpdateRequest(textBox.Text, (FolderRepresentPosition) textBox.Tag);
         }
 
         private void buttonOpenA_Click(object sender, EventArgs e)
         {
-            OnFileOpen((string)listBoxFilesA.SelectedItem);
+            OnFileOpen((string) listBoxFilesA.SelectedItem);
         }
 
         private void buttonOpenB_Click(object sender, EventArgs e)
         {
-            OnFileOpen((string)listBoxFilesB.SelectedItem);
+            OnFileOpen((string) listBoxFilesB.SelectedItem);
         }
 
         private void buttonDeleteA_Click(object sender, EventArgs e)
         {
-            OnFileDelete((string)listBoxFilesA.SelectedItem);
+            OnFileDelete((string) listBoxFilesA.SelectedItem);
             OnFileListUpdateRequest(textBoxPathA.Text, FolderRepresentPosition.A);
         }
+
         private void buttonDeleteB_Click(object sender, EventArgs e)
         {
-            OnFileDelete((string)listBoxFilesB.SelectedItem);
+            OnFileDelete((string) listBoxFilesB.SelectedItem);
             OnFileListUpdateRequest(textBoxPathB.Text, FolderRepresentPosition.B);
         }
 
@@ -206,6 +208,22 @@ namespace TaraSync
             var path = Path.Combine(textBoxPathB.Text, textBoxCreateB.Text);
             OnFileCreate(path);
             OnFileListUpdateRequest(textBoxPathB.Text, FolderRepresentPosition.B);
+        }
+
+        private void buttonGetPathA_Click(object sender, EventArgs e)
+        {
+            if (folderBrowserDialogA.ShowDialog() == DialogResult.OK)
+            {
+                textBoxPathA.Text = folderBrowserDialogA.SelectedPath;
+            }
+        }
+
+        private void buttonGetPathB_Click(object sender, EventArgs e)
+        {
+            if (folderBrowserDialogB.ShowDialog() == DialogResult.OK)
+            {
+                textBoxPathB.Text = folderBrowserDialogB.SelectedPath;
+            }
         }
     }
 }
