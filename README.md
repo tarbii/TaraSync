@@ -1,5 +1,5 @@
 # TaraSync
-WinForms application implementing MVP pattern which synchronize files in two folders.
+WinForms application implementing MVP pattern which synchronizes files in two folders.
 
 #####How it works
 TaraSync uses serialized *snapshot* from previous synchronization (Dictionary with file path as a key and file hash as a value) 
